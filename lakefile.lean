@@ -1,9 +1,11 @@
 import Lake
 open Lake DSL
 
-package «linear_algebra_done_right» {
+package «chapter1» where
   -- add any package configuration options here
-}
+
+lean_lib «chapter1» where
+  -- add library configuration options here
 
 require mathlib from git
   "https://github.com/leanprover-community/mathlib4.git"

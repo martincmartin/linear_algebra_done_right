@@ -66,8 +66,6 @@ instance nTupleAddCommGroup : AddCommGroup (Fin n → F)
   add_zero := add_zero
   add_right_inv := add_neg_self
 
-#print Field
-
 -- Should this use instance or def?
 def nTupleVectorSpace : VectorSpace F (Fin n → F)
     where
