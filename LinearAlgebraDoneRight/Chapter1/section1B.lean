@@ -31,13 +31,13 @@ import Mathlib.GroupTheory.GroupAction.Pi
 -- So, we separate out the parts that involve only addition, including the zero
 -- and negation, into a class of their own that doesn't even mention field.  In
 -- abstract algebra, this is an additive commutative group, so we call it
--- add_comm_group.
+-- AddCommGroup.
 
--- Put this in its own namespace, since there is already an add_comm_group in
+-- Put this in its own namespace, since there is already an AddCommGroup in
 -- mathlib, and it gets included when we include field.
 namespace LADR
 
--- "extends has_add" adds a function 'add' to VectorSpace that uses infix
+-- "extends Add" adds a function 'add' to VectorSpace that uses infix
 -- notation, e.g. 'u + v'.  Similarly with the other "extends" clauses.
 @[ext]
 class AddCommGroup (V : Type _) extends Add V, Zero V, Neg V where
@@ -67,7 +67,7 @@ instance nTupleAddCommGroup : AddCommGroup (Fin n → F)
   add_right_inv := add_neg_self
 
 -- Should this use instance or def?
-def nTupleVectorSpace : VectorSpace F (Fin n → F)
+instance nTupleVectorSpace : VectorSpace F (Fin n → F)
     where
   smul a v := a • v
   smul_assoc := smul_assoc
