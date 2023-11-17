@@ -1,12 +1,18 @@
 -- Chapter 1 Section C: Subgroups
 
 import Mathlib.Algebra.Field.Basic
+import Mathlib.Data.Set.Basic
 import Mathlib.Data.SetLike.Basic
 
 import «LinearAlgebraDoneRight».Chapter1.section1B
 
+import Mathlib.Data.Fin.VecNotation
+
 
 namespace LADR
+
+-- 1.32  Definition  Subspace
+-- 1.34  Conditions of a subspace
 
 -- Note that we don't have the problem with "extends" that we had for
 -- VectorSpace, since this is a structure not a class, and structures can't use
@@ -136,7 +142,7 @@ end AddCommGroup
 -- subset that is also a VectorSpace, assuming that add and smul are the same.
 --
 -- Thanks to Yakov Pechersky for formalizing it this way.
-def genSubspace (h_add : ∀ x y : W, ((x + y : W) : V) = x + y)
+def toSubspace (h_add : ∀ x y : W, ((x + y : W) : V) = x + y)
   (h_smul : ∀ (c : F) (w : W), c • w = c • (w : V)) : Subspace F V where
   carrier := W
   add_mem' := by
@@ -154,5 +160,31 @@ def genSubspace (h_add : ∀ x y : W, ((x + y : W) : V) = x + y)
     specialize h_smul c ⟨v, hv⟩
     dsimp only at h_smul
     simp [← h_smul]
+
+
+-- 1.33  Example  {(x₁, x₂, 0) : x₁, x₂ ∈ F} is a subspace of F^3.
+
+variable {F : Type _} [myfield : Field F] -- (x₁ x₂ : F)
+
+def firstTwo : (Set (Fin 3 → F)) := {![x₁, x₂, 0] | (x₁ : F) (x₂ : F)}
+
+def firstTwoSubspace : Subspace F (Fin 3 → F) where
+  carrier := firstTwo
+  add_mem' := by
+    simp [firstTwo]
+    intros u v u₁ u₂ ueq v₁ v₂ veq
+    use (u₁ + v₁)
+    use (u₂ + v₂)
+    rw [← ueq, ← veq]
+    simp
+  zero_mem' := by simp [firstTwo]
+  smul_mem' := by
+    simp [firstTwo]
+    intros c v v₁ v₂ veq
+    rw [← veq]
+    simp
+    use c * v₁
+    use c * v₂
+
 
 end LADR
