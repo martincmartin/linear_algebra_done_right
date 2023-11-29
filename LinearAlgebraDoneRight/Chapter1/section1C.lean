@@ -8,6 +8,20 @@ import «LinearAlgebraDoneRight».Chapter1.section1B
 
 import Mathlib.Data.Fin.VecNotation
 
+import Mathlib.Tactic
+
+import Mathlib.Topology.Basic
+import Mathlib.Topology.Algebra.Monoid
+
+import Mathlib.Data.Set.Intervals.Basic
+
+import Mathlib.Data.Real.Basic
+
+import Mathlib.Analysis.Calculus.Deriv.Basic
+import Mathlib.Analysis.Calculus.Deriv.Add
+import Mathlib.Analysis.Calculus.Deriv.Mul
+
+
 
 namespace LADR
 
@@ -143,7 +157,7 @@ end AddCommGroup
 --
 -- Thanks to Yakov Pechersky for formalizing it this way.
 def toSubspace (h_add : ∀ x y : W, ((x + y : W) : V) = x + y)
-  (h_smul : ∀ (c : F) (w : W), c • w = c • (w : V)) : Subspace F V where
+  (h_smul : ∀ (c : F) (w : W), (c • w : W) = c • (w : V)) : Subspace F V where
   carrier := W
   add_mem' := by
     intros u v hu hv
@@ -186,5 +200,136 @@ def firstTwoSubspace : Subspace F (Fin 3 → F) where
     use c * v₁
     use c * v₂
 
+
+-- 1.35  Example  subspaces
+
+-- 1.35 (a) if b ∈ F, then {(x₁, x₂, x₃, x₄)| x₃ = 5x₄ + b} is a subspace if and
+-- only if b = 0.
+
+-- First, do the reverse:
+
+def fivex₄ : (Set (Fin 4 → F)) :=
+  { ![x₁, x₂, x₃, x₄] | (x₁ : F) (x₂ : F) (x₃ : F) (x₄ : F) (_h : x₃ = 5 * x₄)}
+
+def fivex₄PlusBSubspace : Subspace F (Fin 4 → F) where
+  carrier := fivex₄
+  add_mem' := by
+    simp [fivex₄]
+    intros u v u₁ u₂ u₃ u₄ uh ueq v₁ v₂ v₃ v₄ vh veq
+    rw [← ueq, ← veq]
+    use u₁ + v₁, u₂ + v₂, u₃ + v₃, u₄ + v₄
+    constructor
+    . rw [uh, vh]
+      rw [Distrib.left_distrib]
+    simp
+  zero_mem' := by
+    -- simp [fivex₄]
+    use 0, 0, 0, 0
+    simp
+  smul_mem' := by
+    simp [fivex₄]
+    intros c v x₁ x₂ x₃ x₄ h hv
+    rw [← hv, h]
+    use c * x₁, c * x₂, c * (5 * x₄), c * x₄
+    simp
+    ring_nf
+
+section
+-- Now the forward
+variable (b : F)
+
+def fivex₄b : (Set (Fin 4 → F)) :=
+  { ![x₁, x₂, x₃, x₄] | (x₁ : F) (x₂ : F) (x₃ : F) (x₄ : F) (_h : x₃ = 5 * x₄ + b)}
+
+theorem b_eq_zero (fivex₄bSubspace : Subspace F (Fin 4 → F)) (h : fivex₄bSubspace.carrier = fivex₄b b) : b = 0 := by
+  have zero_in := fivex₄bSubspace.zero_mem'
+  rw [h, fivex₄b] at zero_in
+  simp at zero_in
+  rcases zero_in with ⟨x₁, x₂, x₃, x₄, h₃₄, h₁eq0, h₂eq0, h₃eq0, h₄eq0⟩
+  rw [h₃eq0, h₄eq0] at h₃₄
+  simp at h₃₄
+  simp [h₃₄]
+end
+
+-- 1.35 (b)  The set of continuous real-valued functions on the interval [0, 1]
+-- is a subspace of R^[0, 1]
+
+
+def zero_to_one := Set.Icc (0 : ℝ) (1 : ℝ)
+
+noncomputable section
+
+def cont_functs_subspace : Subspace ℝ (zero_to_one → ℝ) where
+  carrier := { f | Continuous f}
+  add_mem' := by
+    intros f g hf hg
+    exact hf.add hg
+  zero_mem' := continuous_const
+  smul_mem' := by
+    intros c f hf
+    exact continuous_const.mul hf
+
+end -- noncomputable
+
+-- 1.35 (c)  The set of differentiable real-valued functions f on the interval
+-- (0, 3) such that f'(2) = b is a subspace of R^(0, 3) if and only if b = 0.
+
+-- We can't do this the same way as we do for continuous functions above,
+-- because Lean's definition of derivative requires that the domain be a group.
+-- Our domain is (0, 3), and for example, 2 + 2 is not in the domain.
+
+-- So we phrase it a little differently.  We talk about functions from ℝ → ℝ,
+-- and only require them to be differentiable on (0, 3).
+
+def zero_to_three := Set.Ioo (0 : ℝ) (3 : ℝ)
+
+noncomputable section
+
+
+-- First, the reverse direction: if d = 0, then we have a subspace.
+
+lemma add_same (f g : ℝ → ℝ) : f + g = fun x => f x + g x := rfl
+
+def diff_functs_subspace : Subspace ℝ (ℝ  → ℝ) where
+  carrier := { f | (∀ x ∈ zero_to_three, DifferentiableAt ℝ f x) ∧ (HasDerivAt f 0 2)}
+  add_mem' := by
+    intros f g hf hg
+    simp
+    constructor
+    . intro x hx
+      rcases (hf.left x hx) with ⟨ f'x, f_has ⟩
+      rcases (hg.left x hx) with ⟨ g'x, g_has ⟩
+      use f'x + g'x
+      exact f_has.add g_has
+    rw [add_same]
+    have := hf.right.add hg.right
+    simp at this
+    exact this
+  zero_mem' := by
+    constructor
+    . intro x _
+      exact differentiableAt_const (0 : ℝ)
+    apply hasDerivAtFilter_const
+  smul_mem' := by
+    simp
+    intros c f hf hf'2
+    constructor
+    . intro x hx
+      apply (differentiableAt_const c).smul
+      apply (hf x hx)
+    have h_mul := (hasDerivAt_const (2 : ℝ) c).mul hf'2
+    simp at h_mul
+    exact h_mul
+
+-- Now the reverse: if we have a subspace, then b must be zero.
+variable (b : ℝ) (ss : Subspace ℝ (ℝ → ℝ))
+
+theorem b_is_zero (h : ss.carrier = {f | (∀ x ∈ zero_to_three, DifferentiableAt ℝ f x) ∧ (HasDerivAt f b 2)}) :
+  b = 0 := by
+    have foo := ss.zero_mem'
+    rw [h] at foo
+    exact foo.right.unique (hasDerivAt_const 2 0)
+
+end -- noncomputable
 
 end LADR

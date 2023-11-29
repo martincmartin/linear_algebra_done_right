@@ -128,7 +128,7 @@ instance funAddCommGroup : AddCommGroup (S → F)
   add_zero := add_zero
   add_right_inv := add_neg_self
 
-def funVectorSpace : VectorSpace F (S → F)
+instance funVectorSpace : VectorSpace F (S → F)
     where
   smul a v x := a * v x
   smul_assoc := smul_assoc
