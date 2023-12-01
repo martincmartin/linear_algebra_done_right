@@ -156,7 +156,7 @@ end AddCommGroup
 -- subset that is also a VectorSpace, assuming that add and smul are the same.
 --
 -- Thanks to Yakov Pechersky for formalizing it this way.
-def toSubspace (h_add : ∀ x y : W, ((x + y : W) : V) = x + y)
+theorem toSubspace (h_add : ∀ x y : W, ((x + y : W) : V) = x + y)
   (h_smul : ∀ (c : F) (w : W), (c • w : W) = c • (w : V)) : Subspace F V where
   carrier := W
   add_mem' := by
@@ -271,7 +271,21 @@ def cont_functs_subspace : Subspace ℝ (zero_to_one → ℝ) where
 
 end -- noncomputable
 
--- 1.35 (c)  The set of differentiable real-valued functions f on the interval
+-- 1.35 (c)  The set of differentiable real-valued functions on ℝ is a subspace
+-- of ℝ ^ ℝ.
+
+noncomputable section
+
+def differentiable_subspace : Subspace ℝ (ℝ  → ℝ) where
+  carrier := {f | Differentiable ℝ f}
+  add_mem' := Differentiable.add
+  zero_mem' := differentiable_const 0
+  smul_mem' := fun c => (differentiable_const c).smul
+
+end -- noncomputable
+
+
+-- 1.35 (d)  The set of differentiable real-valued functions f on the interval
 -- (0, 3) such that f'(2) = b is a subspace of R^(0, 3) if and only if b = 0.
 
 -- We can't do this the same way as we do for continuous functions above,
@@ -290,7 +304,7 @@ noncomputable section
 
 lemma add_same (f g : ℝ → ℝ) : f + g = fun x => f x + g x := rfl
 
-def diff_functs_subspace : Subspace ℝ (ℝ  → ℝ) where
+theorem diff_functs_subspace : Subspace ℝ (ℝ  → ℝ) where
   carrier := { f | (∀ x ∈ zero_to_three, DifferentiableAt ℝ f x) ∧ (HasDerivAt f 0 2)}
   add_mem' := by
     intros f g hf hg
@@ -307,16 +321,15 @@ def diff_functs_subspace : Subspace ℝ (ℝ  → ℝ) where
     exact this
   zero_mem' := by
     constructor
-    . intro x _
-      exact differentiableAt_const (0 : ℝ)
+    . intro _ _
+      exact differentiableAt_const 0
     apply hasDerivAtFilter_const
   smul_mem' := by
     simp
     intros c f hf hf'2
     constructor
     . intro x hx
-      apply (differentiableAt_const c).smul
-      apply (hf x hx)
+      apply (differentiableAt_const c).smul (hf x hx)
     have h_mul := (hasDerivAt_const (2 : ℝ) c).mul hf'2
     simp at h_mul
     exact h_mul
@@ -329,6 +342,32 @@ theorem b_is_zero (h : ss.carrier = {f | (∀ x ∈ zero_to_three, Differentiabl
     have foo := ss.zero_mem'
     rw [h] at foo
     exact foo.right.unique (hasDerivAt_const 2 0)
+
+end -- noncomputable
+
+-- 1.35 (e)  The set of all sequences of complex numbers with limit 0 is a
+-- subspace of ℂ ^ ∞.
+
+noncomputable section
+
+open Filter Topology
+
+def seq_zero : Subspace ℂ (ℕ → ℂ) where
+  carrier := {u | Tendsto u Filter.atTop (𝓝 0)}
+  add_mem' := by
+    simp
+    intro u v hu hv
+    have := hu.add hv
+    simp at this
+    exact this
+  zero_mem' := tendsto_const_nhds
+  smul_mem' := by
+    simp
+    intro c u hu
+    have := hu.const_mul c
+    simp at this
+    exact this
+
 
 end -- noncomputable
 
