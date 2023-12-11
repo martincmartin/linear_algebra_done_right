@@ -48,9 +48,13 @@ class AddCommGroup (V : Type _) extends Add V, Zero V, Neg V where
 
 @[ext]
 class VectorSpace (F : Type _) (V : Type _) [Field F] [AddCommGroup V] extends SMul F V where
+  -- TO DO: Reanme to Mathlib's mul_smul
   smul_assoc : ∀ a b : F, ∀ v : V, (a * b) • v = a • b • v
+  -- TO DO: Rename to Mathlib's one_smul
   mul_ident : ∀ v : V, (1 : F) • v = v
+  -- TO DO: Rename to Mathlib's smul_add
   left_distrib : ∀ a : F, ∀ u v : V, a • (u + v) = a • u + a • v
+  -- TO DO: Rename to Mathlib's add_smul
   right_distrib : ∀ a b : F, ∀ v : V, (a + b) • v = a • v + b • v
 
 -- "F^n is a vector space over F, as you should verify."
@@ -66,7 +70,6 @@ instance nTupleAddCommGroup : AddCommGroup (Fin n → F)
   add_zero := add_zero
   add_right_inv := add_neg_self
 
--- Should this use instance or def?
 instance nTupleVectorSpace : VectorSpace F (Fin n → F)
     where
   smul a v := a • v

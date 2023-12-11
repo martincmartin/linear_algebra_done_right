@@ -21,7 +21,6 @@ import Mathlib.Data.Fin.VecNotation
 
 import Mathlib.Tactic
 
-
 namespace LADR
 
 -- 1.1 Definition complex numbers

@@ -1,5 +1,6 @@
 /build
 /lake-packages
 /.lake
+.DS_Store
 *~
 *.olean
